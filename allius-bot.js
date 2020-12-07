@@ -33,6 +33,12 @@ let RESPOSTAS = {
 
     // ATLETA
     ATLETA__ALTO_RENDIMENTO: '',
+    ATLETA__MODALIDADE: '',
+    ATLETA__VINCULO_PROJETO_LIE: '',
+    ATLETA__PATROCINADORES: '',
+
+    // REPRESENTANTE
+    REPRESENTANTE__SERVICO_PRESTADO_DESCRICAO: '',
 
     // ENTIDADE_FILANTROPICA
     ENTIDADE_FILANTROPICA__NOME: '',
@@ -48,6 +54,11 @@ let RESPOSTAS = {
     ENTIDADE_FILANTROPICA__PROJETO__ASSESSORIA_ETAPAS: '',
     ENTIDADE_FILANTROPICA__PROJETO__ASSESSORIA_ETAPAS__OUTROS_DESCRICAO: '',
     ENTIDADE_FILANTROPICA__PROJETO__ASSESSORIA_ETAPAS__DEMANDA_DESCRICAO: '',
+
+    // USUARIO
+    USUARIO__NOME: '',
+    USUARIO__EMAIL: '',
+    USUARIO__TELEFONE: '',
 }
 
 const QUESTIONARIO = {
@@ -56,6 +67,7 @@ const QUESTIONARIO = {
         OPCOES: [
             { text: 'Represento uma entidade sem fins econômicos de natureza esportiva', value: 'sem_fins_lucrativos' }, 
             { text: 'Represento uma empresa que patrocina ou pretende patrocinar projetos por meio de lei de incentivo', value: 'empresa'},
+            { text: 'Represento uma empresa que presta serviços associados à lei de incentivo', value: 'representante'},
             { text: 'Sou atleta', value: 'atleta'},
             { text: 'Outros', value: 'outros'},
         ]
@@ -103,7 +115,7 @@ const QUESTIONARIO = {
     },
     ATLETA__MODALIDADE: {
         PERGUNTA: 'Qual modalidade esportiva você pratica?',
-        PLACEHOLDER: 'Nome da modalidade',
+        PLACEHOLDER: 'Modalidade',
     },
     ATLETA__VINCULO_PROJETO_LIE: {
         PERGUNTA: 'Sua atividade esportiva é atendida por algum projeto vinculado a leis de incentivo ao esporte?',
@@ -196,7 +208,17 @@ const QUESTIONARIO = {
     OUTROS_DEMANDA: {
         PERGUNTA: 'Informe aqui a situação que demanda a assessoria jurídica pretendida',
         PLACEHOLDER: 'Digite sua demanda'
-    }
+    },
+
+    // REPRESENTANTE
+    REPRESENTANTE__SERVICO_PRESTADO_DESCRICAO: {
+        PERGUNTA: 'Informe aqui o serviço prestado pela empresa, e a situação que demanda a assessoria jurídica pretendida'
+    },
+
+    // USUARIO
+    USUARIO__NOME: 'Digite seu nome',
+    USUARIO__EMAIL: 'Digite seu e-mail',
+    USUARIO__TELEFONE: 'Digite seu telefone',
 }
 
 botui.message
@@ -214,12 +236,37 @@ botui.message
                 return cadastrarAtleta();
             case 'outros':
                 return cadastrarOutros();
+            case 'representante':
+                return cadastrarRepresentante();
         }
     })
     .then(() => {
-        fim()
+        infoUsuario().then(() => fim())
     });
 
+const infoUsuario = async () => {
+    // USUARIO__NOME
+    await botui.message.bot({ delay: 500, content: QUESTIONARIO.USUARIO__NOME })
+        .then(() => botui.action.text({ action: { placeholder: 'Seu nome' } }))
+        .then(({ value }) => RESPOSTAS.USUARIO__NOME = value)
+
+    // USUARIO__EMAIL
+    await botui.message.bot({ delay: 500, content: QUESTIONARIO.USUARIO__EMAIL })
+        .then(() => botui.action.text({ sub_type: 'email', action: { placeholder: 'Seu email' } }))
+        .then(({ value }) => RESPOSTAS.USUARIO__EMAIL = value)
+
+    // USUARIO__TELEFONE
+    await botui.message.bot({ delay: 500, content: QUESTIONARIO.USUARIO__TELEFONE })
+        .then(() => botui.action.text({ sub_type: 'tel',  action: { placeholder: 'Seu telefone' } }))
+        .then(({ value }) => RESPOSTAS.USUARIO__TELEFONE = value)
+}
+
+const cadastrarRepresentante = async () => {
+    // ATLETA__MODALIDADE
+    await botui.message.bot({ delay: 500, content: QUESTIONARIO.REPRESENTANTE__SERVICO_PRESTADO_DESCRICAO.PERGUNTA })
+        .then(() => botui.action.text({ action: {} }))
+        .then(({ value }) => RESPOSTAS.REPRESENTANTE__SERVICO_PRESTADO_DESCRICAO = value)
+}
 
 const cadastrarAtleta = async () => {
     // ATLETA__ALTO_RENDIMENTO
@@ -229,9 +276,9 @@ const cadastrarAtleta = async () => {
         .then(({ value }) => RESPOSTAS.ATLETA__ALTO_RENDIMENTO = value)
         
     // ATLETA__MODALIDADE
-        await botui.message.bot({ delay: 500, content: QUESTIONARIO.ATLETA__MODALIDADE.PERGUNTA })
-            .then(() => botui.action.text({ action: { placeholder: QUESTIONARIO.ATLETA__MODALIDADE.PLACEHOLDER } }))
-            .then(({ value }) => RESPOSTAS.ATLETA__MODALIDADE = value)
+    await botui.message.bot({ delay: 500, content: QUESTIONARIO.ATLETA__MODALIDADE.PERGUNTA })
+        .then(() => botui.action.text({ action: { placeholder: QUESTIONARIO.ATLETA__MODALIDADE.PLACEHOLDER } }))
+        .then(({ value }) => RESPOSTAS.ATLETA__MODALIDADE = value)
             
     // ATLETA__VINCULO_PROJETO_LIE
     await botui.message
@@ -257,7 +304,7 @@ const cadastrarOutros = async () => {
 const cadastrarEmpresa = async () => {
     // EMPRESA__NOME
     await botui.message.bot({ delay: 500, content: 'Informe aqui o nome da empresa' })
-        .then(() => botui.action.text({ action: { placeholder: 'Nome da entidade' } }))
+        .then(() => botui.action.text({ action: { placeholder: 'Nome da empresa' } }))
         .then(({ value }) => RESPOSTAS.EMPRESA__NOME = value)
     
     // EMPRESA__TRIBUTACAO_LUCRO_REAL
@@ -288,7 +335,7 @@ const cadastrarEmpresa = async () => {
             RESPOSTAS.EMPRESA__CONTRIBUINTE_ISS = value
 
             if(RESPOSTAS.EMPRESA__CONTRIBUINTE_ISS == 'sim') {
-                return botui.message.bot({ delay: 500, content: 'Informe aqui o(s) estado(s) em que a empresa recolhe ICMS' })
+                return botui.message.bot({ delay: 500, content: 'Informe aqui o(s) estado(s) em que a empresa recolhe ISS' })
                     .then(() => botui.action.text({ action: {} }))
                     .then(({ value }) => RESPOSTAS.EMPRESA__CONTRIBUINTE_ISS__ESTADOS = value)
             }
